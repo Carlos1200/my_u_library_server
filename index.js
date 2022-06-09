@@ -1,7 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const users=require('./routes/users.routes');
-require('dotenv').config();
+const express = require("express");
+const cors = require("cors");
+const users = require("./routes/users.routes");
+require("dotenv").config();
 
 //creating the server
 const app = express();
@@ -11,11 +11,20 @@ app.use(cors());
 
 //enable body parser
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 //importing routes
-app.use('/api/users',users);
+app.use("/api/users", users);
+
+//handling errors
+app.use((err, req, res, next) => {
+  return res.status(500).json({
+    status: "error",
+    message: err.message,
+  });
+});
 
 //start the server
-app.listen(process.env.PORT, () => {
-    console.log(`Server started at port ${process.env.PORT}`);
+app.listen(process.env.PORT || 4000, () => {
+  console.log(`Server started at port ${process.env.PORT}`);
 });
