@@ -1,7 +1,8 @@
 const { Router } = require("express");
-const { check,param } = require("express-validator");
+const { check, param } = require("express-validator");
 
 const fieldValidation = require("../middlewares/fieldValidation.middleware");
+const jwtVerify = require("../middlewares/jwtVerify.middleware");
 
 const {
   createUser,
@@ -16,6 +17,7 @@ const router = Router();
 router.post(
   "/",
   [
+    jwtVerify,
     check("first_name").notEmpty().withMessage("First name is required"),
     check("last_name").notEmpty().withMessage("Last name is required"),
     check("email").isEmail().withMessage("Email is required"),
@@ -28,12 +30,15 @@ router.post(
 
 router.get("/", getUsers);
 
-router.get("/:id", [
-    param("id").isInt().withMessage("Id must be an integer"),
-    fieldValidation,
-], getUserById);
+router.get(
+  "/:id",
+  [param("id").isInt().withMessage("Id must be an integer"), fieldValidation],
+  getUserById
+);
 
-router.put('/:id',[
+router.put(
+  "/:id",
+  [
     check("first_name").notEmpty().withMessage("First name is required"),
     check("last_name").notEmpty().withMessage("Last name is required"),
     check("email").isEmail().withMessage("Email is required"),
@@ -41,11 +46,18 @@ router.put('/:id',[
     check("role").isIn(["Student", "Librarian"]).withMessage("Role is invalid"),
     param("id").isInt().withMessage("Id must be an integer"),
     fieldValidation,
-], updateUser);
+  ],
+  updateUser
+);
 
-router.delete('/:id',[
+router.delete(
+  "/:id",
+  [
+    jwtVerify,
     param("id").isInt().withMessage("Id must be an integer"),
     fieldValidation,
-], deleteUser);
+  ],
+  deleteUser
+);
 
 module.exports = router;

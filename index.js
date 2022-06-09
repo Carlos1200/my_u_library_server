@@ -4,6 +4,7 @@ const users = require("./routes/users.routes");
 const authors = require("./routes/authors.routes");
 const genres = require("./routes/genres.routes");
 const books = require("./routes/books.routes");
+const auth = require("./routes/auth.routes");
 require("dotenv").config();
 
 //creating the server
@@ -21,6 +22,7 @@ app.use("/api/users", users);
 app.use("/api/authors", authors);
 app.use("/api/genres", genres);
 app.use("/api/books", books);
+app.use("/api/auth", auth);
 
 //handling errors
 app.use((err, req, res, next) => {

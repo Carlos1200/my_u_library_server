@@ -1,4 +1,5 @@
 const pool = require("../db");
+const bcrypt = require("bcryptjs");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -12,9 +13,15 @@ const getUsers = async (req, res, next) => {
 const createUser = async (req, res, next) => {
   try {
     const { first_name, last_name, email, role } = req.body;
+
+    //creating a default password
+    const password = "password";
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const user = await pool.query(
-      "INSERT INTO users(first_name,last_name,email,role) VALUES($1,$2,$3,$4) RETURNING *",
-      [first_name, last_name, email, role]
+      "INSERT INTO users(first_name,last_name,email,role,password) VALUES($1,$2,$3,$4,$5) RETURNING *",
+      [first_name, last_name, email, role,hashedPassword]
     );
     res.status(200).json(user.rows[0]);
   } catch (error) {

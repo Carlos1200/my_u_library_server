@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const { check, param } = require("express-validator");
 const fieldValidation = require("../middlewares/fieldValidation.middleware");
+const jwtVerify = require("../middlewares/jwtVerify.middleware");
 
 const {
   createBook,
@@ -15,6 +16,7 @@ const router = Router();
 router.post(
   "/",
   [
+    jwtVerify,
     check("title").notEmpty().withMessage("Title is required"),
     check("authorId").notEmpty().withMessage("Author is required"),
     check("authorId").isArray().withMessage("Author must be an array"),
@@ -49,6 +51,7 @@ router.get(
 router.put(
   "/:id",
   [
+    jwtVerify,
     param("id").isInt().withMessage("Id must be an integer"),
     check("title").notEmpty().withMessage("Title is required"),
     check("authorId").notEmpty().withMessage("Author is required"),
@@ -75,7 +78,7 @@ router.put(
 
 router.delete(
   "/:id",
-  [param("id").isInt().withMessage("Id must be an integer")],
+  [jwtVerify, param("id").isInt().withMessage("Id must be an integer")],
   deleteBook
 );
 
