@@ -28,9 +28,7 @@ CREATE TABLE genres (
 CREATE TABLE books (
     id SERIAL,
     title VARCHAR(255) NOT NULL,
-    author VARCHAR(255) NOT NULL,
     published_year INT NOT NULL,
-    genre VARCHAR(255) NOT NULL,
     stock INT NOT NULL,
     PRIMARY KEY ("id")
 );
