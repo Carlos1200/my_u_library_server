@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const users = require("./routes/users.routes");
+const authors = require("./routes/authors.routes");
 require("dotenv").config();
 
 //creating the server
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //importing routes
 app.use("/api/users", users);
+app.use("/api/authors", authors);
 
 //handling errors
 app.use((err, req, res, next) => {

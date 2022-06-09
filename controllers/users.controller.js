@@ -46,7 +46,7 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-const getUser = async (req, res, next) => {
+const getUserById = async (req, res, next) => {
   try {
     const user = await pool.query("SELECT * FROM users WHERE id=$1", [
       req.params.id,
@@ -60,7 +60,7 @@ const getUser = async (req, res, next) => {
 module.exports = {
   createUser,
   deleteUser,
-  getUser,
+  getUserById,
   getUsers,
   updateUser,
 };

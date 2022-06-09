@@ -6,7 +6,7 @@ const fieldValidation = require("../middlewares/fieldValidation.middleware");
 const {
   createUser,
   deleteUser,
-  getUser,
+  getUserById,
   getUsers,
   updateUser,
 } = require("../controllers/users.controller");
@@ -31,7 +31,7 @@ router.get("/", getUsers);
 router.get("/:id", [
     param("id").isInt().withMessage("Id must be an integer"),
     fieldValidation,
-], getUser);
+], getUserById);
 
 router.put('/:id',[
     check("first_name").notEmpty().withMessage("First name is required"),
