@@ -4,12 +4,14 @@ const fieldValidation = require("../middlewares/fieldValidation.middleware");
 const jwtVerify = require("../middlewares/jwtVerify.middleware");
 
 const {
+  checkOutBook,
   createBook,
   deleteBook,
   getBook,
   getBooks,
-  updateBook,
   getBooksByFilter,
+  getBorrowedUser,
+  updateBook,
 } = require("../controllers/books.controller");
 
 const router = Router();
@@ -55,11 +57,24 @@ router.get(
 );
 
 router.get(
+  "/borrow",
+  getBorrowedUser
+)
+
+router.get(
   "/:id",
   [param("id").isInt().withMessage("Id must be an integer")],
   getBook
 );
 
+router.put(
+  "/borrow/:id",
+  [
+    jwtVerify,
+    param("id").isInt().withMessage("Id must be an integer"),
+    fieldValidation,
+  ],checkOutBook
+);
 
 
 router.put(

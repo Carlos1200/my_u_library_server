@@ -10,7 +10,7 @@ const createBook = async (req, res, next) => {
       format("SELECT name FROM authors WHERE id IN (%L)", authorId)
     );
     if (author.rows.length !== authorId.length) {
-      next({
+      return next({
         status: 404,
         message: "Author not found",
       });
@@ -20,7 +20,7 @@ const createBook = async (req, res, next) => {
       format("SELECT name FROM genres WHERE id IN (%L)", genreId)
     );
     if (genre.rows.length !== genreId.length) {
-      next({
+      return next({
         status: 404,
         message: "Genre not found",
       });
@@ -63,7 +63,7 @@ const updateBook = async (req, res, next) => {
       format("SELECT name FROM authors WHERE id IN (%L)", authorId)
     );
     if (author.rows.length !== authorId.length) {
-      next({
+      return next({
         status: 404,
         message: "Author not found",
       });
@@ -73,7 +73,7 @@ const updateBook = async (req, res, next) => {
       format("SELECT name FROM genres WHERE id IN (%L)", genreId)
     );
     if (genre.rows.length !== genreId.length) {
-      next({
+      return next({
         status: 404,
         message: "Genre not found",
       });
@@ -188,11 +188,71 @@ const getBooksByFilter = async (req, res, next) => {
   }
 }
 
+const checkOutBook = async (req, res, next) => {
+  try {
+    const bookId = req.params.id;
+    const book = await pool.query("SELECT * FROM books WHERE id=$1", [bookId]);
+    if (book.rows.length === 0) {
+      return next({
+        status: 404,
+        message: "Book not found",
+      });
+    }
+    if (book.rows[0].stock === 0) {
+      return next({
+        status: 404,
+        message: "Book is out of stock",
+      });
+    }
+
+    const borrow_user = await pool.query(
+      "SELECT * FROM borrows WHERE book_id=$1 AND user_id=$2 AND status='Active'",
+      [bookId, req.user.id]
+    );
+
+    if (borrow_user.rows.length > 0) {
+      return next({
+        status: 404,
+        message: "Book is already borrowed",
+      });
+    }
+
+    const updatedBook = await pool.query(
+        "UPDATE books SET stock=stock-1 WHERE id=$1 RETURNING *",
+        [bookId]
+      );
+     await pool.query(
+        "INSERT INTO borrows(book_id, user_id,status) VALUES ($1, $2, $3) RETURNING *",
+       [ bookId, req.user.id,"Active"]
+    );
+    res.status(200).json({
+      book: updatedBook.rows[0],
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+const getBorrowedUser = async (req, res, next) => {
+  try {
+    const borrowed = await pool.query(
+      "SELECT books.title AS title,books.published_year AS published_year,borrows.status AS status, users.email AS email,users.id AS idUser FROM borrows JOIN books ON borrows.book_id=books.id JOIN users ON borrows.user_id=users.id",
+    );
+    res.status(200).json({
+      borrowed: borrowed.rows,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
+  checkOutBook,
   createBook,
   deleteBook,
   getBook,
   getBooks,
-  updateBook,
   getBooksByFilter,
+  getBorrowedUser,
+  updateBook,
 };
