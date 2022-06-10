@@ -135,7 +135,7 @@ const getBooks = async (req, res, next) => {
   try {
     //get books merging authors and genres into an array
     const books = await pool.query(
-      "SELECT books.*, ARRAY_AGG(authors.name) AS author, ARRAY_AGG(genres.name) AS genre FROM books JOIN author_book ON books.id=author_book.book_id JOIN authors ON authors.id=author_book.author_id JOIN genre_book ON books.id=genre_book.book_id JOIN genres ON genres.id=genre_book.genre_id GROUP BY books.id"
+      "SELECT books.id AS id,books.title AS title,books.published_year AS published_year, ARRAY_AGG(authors.name) AS author, ARRAY_AGG(genres.name) AS genre FROM books JOIN author_book ON books.id=author_book.book_id JOIN authors ON authors.id=author_book.author_id JOIN genre_book ON books.id=genre_book.book_id JOIN genres ON genres.id=genre_book.genre_id GROUP BY books.id"
     );
     res.status(200).json({
       books: books.rows,
@@ -160,10 +160,39 @@ const getBook = async (req, res, next) => {
   }
 };
 
+const getBooksByFilter = async (req, res, next) => {
+  try {
+    const { author, genre,title } = req.query;
+    let query = "SELECT books.id AS id,books.title AS title,books.published_year AS published_year, ARRAY_AGG(authors.name) AS author, ARRAY_AGG(genres.name) AS genre FROM books JOIN author_book ON books.id=author_book.book_id JOIN authors ON authors.id=author_book.author_id JOIN genre_book ON books.id=genre_book.book_id JOIN genres ON genres.id=genre_book.genre_id";
+    let value ;
+    if (author) {
+      value = author;
+      query += " WHERE LOWER(authors.name) LIKE LOWER($1)";
+    }
+    else if (genre) {
+      value = genre;
+      query += "WHERE LOWER(genres.name) LIKE LOWER($1)"
+    }
+    else if (title) {
+      value = title;
+      query += " WHERE LOWER(books.title) LIKE LOWER($1)";
+    }
+    query += " GROUP BY books.id";
+    const books = await pool.query(query,value?[`%${value}%`]:[]);
+    res.status(200).json({
+      books: books.rows,
+    });
+  } catch (error) {
+    console.log({ error });
+    next(error);
+  }
+}
+
 module.exports = {
   createBook,
   deleteBook,
   getBook,
   getBooks,
   updateBook,
+  getBooksByFilter,
 };

@@ -1,7 +1,7 @@
 const pool = require("../db");
 const jwt = require('jsonwebtoken');
 
-const jwtVerify = (req, res, next) => {
+const jwtVerify = async(req, res, next) => {
     const token = req.header('x-auth-token');
     if (!token) {
         return res.status(401).json({
@@ -10,7 +10,7 @@ const jwtVerify = (req, res, next) => {
     }
     try {
         const {id}= jwt.verify(token, process.env.JWT_SECRET);
-        const user = pool.query(
+        const user =await pool.query(
             "SELECT * FROM users WHERE id = $1",
             [id]
         );
@@ -19,11 +19,8 @@ const jwtVerify = (req, res, next) => {
                 message: "Unauthorized",
             });
         }
-        if(user.rows[0].role !== 'Librarian'){
-            return res.status(401).json({
-                message: "Unauthorized",
-            });
-        }
+        
+        req.user = user.rows[0];
         next();
 
     } catch (err) {

@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { check, param } = require("express-validator");
+const { check, param,query } = require("express-validator");
 const fieldValidation = require("../middlewares/fieldValidation.middleware");
 const jwtVerify = require("../middlewares/jwtVerify.middleware");
 
@@ -9,6 +9,7 @@ const {
   getBook,
   getBooks,
   updateBook,
+  getBooksByFilter,
 } = require("../controllers/books.controller");
 
 const router = Router();
@@ -43,10 +44,23 @@ router.post(
 router.get("/", getBooks);
 
 router.get(
+  "/filter",
+  [
+    query("title").optional().isString().withMessage("Title must be a string"),
+    query("authorName").optional().isString().withMessage("Author name must be a string"),
+    query("genreName").optional().isString().withMessage("Genre name must be a string"),
+    fieldValidation
+  ],
+  getBooksByFilter
+);
+
+router.get(
   "/:id",
   [param("id").isInt().withMessage("Id must be an integer")],
   getBook
 );
+
+
 
 router.put(
   "/:id",
@@ -81,5 +95,6 @@ router.delete(
   [jwtVerify, param("id").isInt().withMessage("Id must be an integer")],
   deleteBook
 );
+
 
 module.exports = router;

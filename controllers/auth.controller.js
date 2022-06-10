@@ -24,12 +24,22 @@ const login = async (req, res,next) => {
         return res.status(200).json({
             message: "Login successful",
             token,
+            user: user.rows[0],
         });
     } catch (error) {
         next(error);
     }
 }
 
+const loggedIn = async (req, res,next) =>{
+    const user=req.user;
+    return res.status(200).json({
+        message: "Login successful",
+        user,
+    });
+} 
+
 module.exports = {
-    login
+    login,
+    loggedIn
 };

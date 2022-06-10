@@ -5,6 +5,7 @@ const fieldValidation = require("../middlewares/fieldValidation.middleware");
 const jwtVerify = require("../middlewares/jwtVerify.middleware");
 
 const {
+  changePassword,
   createUser,
   deleteUser,
   getUserById,
@@ -37,6 +38,17 @@ router.get(
 );
 
 router.put(
+  "/password",
+  [
+    jwtVerify,
+    check("oldPassword").notEmpty().withMessage("Old password is required"),
+    check("newPassword").notEmpty().withMessage("New password is required"),
+    fieldValidation,
+  ],
+  changePassword
+);
+
+router.put(
   "/:id",
   [
     check("first_name").notEmpty().withMessage("First name is required"),
@@ -49,6 +61,8 @@ router.put(
   ],
   updateUser
 );
+
+
 
 router.delete(
   "/:id",
