@@ -76,6 +76,7 @@ router.put(
   [
     jwtVerify,
     param("id").isInt().withMessage("Id must be an integer"),
+    check("userId").notEmpty().withMessage("User is required"),
     fieldValidation,
   ],
   returnBook
@@ -86,7 +87,6 @@ router.put(
   [
     jwtVerify,
     param("id").isInt().withMessage("Id must be an integer"),
-    check("userId").notEmpty().withMessage("User is required"),
     fieldValidation,
   ],
   checkOutBook
