@@ -233,10 +233,49 @@ const checkOutBook = async (req, res, next) => {
   }
 }
 
+const returnBook = async (req, res, next) => {
+  try {
+    const bookId = req.params.id;
+    const {userId} = req.body;
+    const book = await pool.query("SELECT * FROM books WHERE id=$1", [bookId]);
+    if (book.rows.length === 0) {
+      return next({
+        status: 404,
+        message: "Book not found",
+      });
+    }
+    const borrow_user = await pool.query(
+      "SELECT * FROM borrows WHERE book_id=$1 AND user_id=$2 AND status='Active'",
+      [bookId, userId]
+    );
+
+    if (borrow_user.rows.length === 0) {
+      return next({
+        status: 404,
+        message: "Book is not borrowed",
+      });
+    }
+
+    const updatedBook = await pool.query(
+        "UPDATE books SET stock=stock+1 WHERE id=$1 RETURNING *",
+        [bookId]
+      );
+      await pool.query(
+        "UPDATE borrows SET status='Inactive' WHERE book_id=$1 AND user_id=$2",
+        [bookId, userId]
+      );
+    res.status(200).json({
+      book: updatedBook.rows[0],
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 const getBorrowedUser = async (req, res, next) => {
   try {
     const borrowed = await pool.query(
-      "SELECT books.title AS title,books.published_year AS published_year,borrows.status AS status, users.email AS email,users.id AS idUser FROM borrows JOIN books ON borrows.book_id=books.id JOIN users ON borrows.user_id=users.id",
+      "SELECT books.id AS idBook, books.title AS title,books.published_year AS published_year,borrows.status AS status, users.email AS email,users.id AS idUser FROM borrows JOIN books ON borrows.book_id=books.id JOIN users ON borrows.user_id=users.id",
     );
     res.status(200).json({
       borrowed: borrowed.rows,
@@ -254,5 +293,6 @@ module.exports = {
   getBooks,
   getBooksByFilter,
   getBorrowedUser,
+  returnBook,
   updateBook,
 };
